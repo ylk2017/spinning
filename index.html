@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>爆旋陀螺物理實驗室 · Beyblade Physics Lab</title>
+<style>
+:root{
+  --paper:#f3f1eb;--card:#fffefa;--ink:#17272e;--muted:#52636a;
+  --line:#d3dad7;--blue:#245bc0;--orange:#b85421;--teal:#087969;
+  --stage:#14272f;--stage-line:#31464e;--radius:18px;
+  --font:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);line-height:1.55}
+button,input,select{font:inherit}
+button{cursor:pointer;min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);padding:9px 15px;transition:background .16s,transform .16s,border-color .16s}
+button:hover:not(:disabled){background:#e8ede7;border-color:#879c99}
+button:active:not(:disabled){transform:translateY(1px)}
+button:disabled{cursor:not-allowed;opacity:.48}
+:focus-visible{outline:3px solid var(--blue);outline-offset:4px}
+.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.primary:hover:not(:disabled){background:#31525e}
+.soft{background:#e7eee9}
+.selected{background:var(--ink)!important;color:#fff!important;border-color:var(--ink)!important}
+header{border-bottom:1px solid var(--line);background:var(--card)}
+.shell{width:min(1440px,100%);margin:auto;padding:22px 30px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:20px}
+.brand{display:flex;align-items:center;gap:13px}
+.brand svg{flex:none}
+h1{font-size:clamp(20px,2vw,28px);line-height:1.2;letter-spacing:-.04em;margin:0}
+.brand small{display:block;color:var(--muted);font-size:11px;letter-spacing:.14em;margin-top:5px}
+.header-tools{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+main.shell{padding-top:20px}
+.toolbar{display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:20px}
+.tabs{display:flex;gap:5px;flex-wrap:wrap}
+.tab{border-color:transparent;background:transparent;display:flex;align-items:center;gap:10px;font-weight:650}
+.tab span{font-size:12px;opacity:.75;font-variant-numeric:tabular-nums}
+.tab.active{background:var(--ink);color:white}
+.mode{display:flex;gap:4px;background:#e4e8e0;border:1px solid var(--line);padding:4px;border-radius:13px}
+.mode button{border:0;background:transparent;font-size:13px;min-height:40px}
+.question-row{display:flex;gap:20px;align-items:flex-start;justify-content:space-between;margin:8px 0 20px}
+.eyebrow{color:var(--teal);font-size:11px;letter-spacing:.13em;font-weight:750;text-transform:uppercase}
+h2{font-size:clamp(23px,2.8vw,35px);line-height:1.35;letter-spacing:-.035em;margin:6px 0 8px;max-width:900px}
+.question-row p{margin:0;color:var(--muted);font-size:14px}
+.status{flex:none;background:#e3eae5;border:1px solid #c6d4cb;border-radius:30px;padding:9px 15px;font-size:13px;margin-top:8px}
+.status.running{background:#dceee7;border-color:#9dcab9}
+.workbench{display:grid;grid-template-columns:minmax(0,1fr) 325px;gap:20px;align-items:start}
+.left,.right{min-width:0}
+.stage{background:var(--stage);border:1px solid #243e47;color:#f4f6ed;border-radius:var(--radius);overflow:hidden;position:relative;box-shadow:0 15px 35px #15313a12}
+.stage-top,.stage-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 19px;flex-wrap:wrap}
+.stage-top{border-bottom:1px solid var(--stage-line);font-size:12px}
+.stage-top strong{font-size:13px;font-weight:600}
+.stage-tag{color:#b8d1d3;font-size:11px;letter-spacing:.06em}
+.stage-bottom{border-top:1px solid var(--stage-line);font-size:12px;color:#c3d3d5}
+canvas{display:block;width:100%}
+#scene{height:350px}
+.readouts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--stage-line);border-top:1px solid var(--stage-line)}
+.readout{background:#1b3038;padding:15px 18px;min-width:0}
+.readout label{display:block;font-size:12px;color:#b7cbcf;margin-bottom:5px}
+.readout .value{font-size:clamp(18px,2vw,27px);font-variant-numeric:tabular-nums;letter-spacing:-.045em;line-height:1.25;overflow-wrap:anywhere}
+.readout .unit{font-size:11px;color:#b7cbcf;margin-top:5px}
+.readout.a .value{color:#a7c9ff}
+.readout.b .value{color:#ffcaa4}
+.readout.l .value{color:#83ddca}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.card h3{font-size:15px;margin:0 0 12px;letter-spacing:-.015em}
+.step-title{display:flex;align-items:center;gap:9px}
+.step-number{display:inline-grid;place-items:center;width:25px;height:25px;border-radius:50%;background:#e7ece5;font-size:12px}
+.note{font-size:12px;color:var(--muted);margin:9px 0;line-height:1.65}
+.predict-options{display:grid;gap:7px}
+.predict-options button{text-align:left;font-size:14px}
+.predict-options button[aria-pressed=true]{border:2px solid var(--teal);background:#e6f1ea;padding:8px 14px}
+.saved{font-size:12px;color:var(--teal);margin:10px 0 0}
+.controls{display:grid;gap:16px}
+.control{min-width:0}
+.control-label{display:flex;justify-content:space-between;gap:10px;align-items:baseline;font-size:13px;margin-bottom:5px}
+.control-label output{font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap}
+input[type=range]{width:100%;height:44px;accent-color:var(--teal);margin:0;cursor:pointer}
+input[type=range]:disabled{opacity:.45;cursor:not-allowed}
+.control-hint{font-size:11px;color:var(--muted);margin-top:-4px}
+.control-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px}
+.control-actions .wide{grid-column:1/-1}
+.inline-actions{display:flex;gap:8px;flex-wrap:wrap}
+.inline-actions button{flex:1;font-size:13px;padding:8px}
+.plot-card{padding:18px;margin-top:18px}
+.plot-header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.plot-header h3{margin:0}
+.plot-header span{font-size:11px;color:var(--muted)}
+.plot-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.plot-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.plot{min-width:0}
+.plot canvas{height:190px}
+.plot.single canvas{height:245px}
+.plot-name{font-size:12px;margin:0 0 5px;color:var(--muted)}
+.learn-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:2px}
+.learn-grid .card{margin-bottom:0}
+details{font-size:13px}
+summary{cursor:pointer;min-height:44px;display:flex;align-items:center;gap:10px;font-weight:650;list-style:none}
+summary::before{content:"+";font-size:19px;color:var(--teal);flex:none}
+details[open]>summary::before{content:"−"}
+details p{margin:8px 0 12px}
+.equation{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#edf1e9;padding:12px;border-radius:9px;overflow-wrap:anywhere;font-size:13px}
+.exit-options{display:grid;gap:7px;margin-top:12px}
+.exit-options button{font-size:13px;text-align:left}
+.feedback{font-size:13px;border-left:3px solid var(--teal);padding-left:12px;margin:12px 0 0}
+.model{margin-top:20px;font-size:12px;color:var(--muted)}
+.model details{border-top:1px solid var(--line);padding-top:10px}
+.model-columns{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.model ul{padding-left:18px}
+footer{display:flex;justify-content:space-between;gap:15px;margin-top:22px;font-size:11px;color:var(--muted);border-top:1px solid var(--line);padding-top:15px;flex-wrap:wrap}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+[hidden]{display:none!important}
+body.presentation .secondary{display:none}
+body.presentation .shell{width:min(1600px,100%);padding:16px 24px}
+body.presentation #scene{height:400px}
+body.presentation .readout .value{font-size:clamp(24px,3vw,42px)}
+body.presentation .workbench{grid-template-columns:minmax(0,1fr) 340px}
+body.presentation .plot canvas{height:160px}
+body.presentation .question-row{margin-bottom:12px}
+body.presentation h2{font-size:clamp(26px,3vw,42px)}
+@media(max-width:1050px){
+  .workbench,body.presentation .workbench{grid-template-columns:minmax(0,1fr) 290px}
+  .shell{padding:20px}
+  .plot-grid{grid-template-columns:1fr}
+  .plot canvas{height:165px}
+}
+@media(max-width:760px){
+  .shell,body.presentation .shell{padding:15px}
+  .top{align-items:flex-start;flex-wrap:wrap}
+  .header-tools{justify-content:flex-start}
+  .brand small{font-size:10px}
+  .toolbar{gap:12px}
+  .tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;gap:4px}
+  .tab{font-size:12px;padding:9px 7px;gap:6px;justify-content:center}
+  .question-row{display:block}
+  .status{display:inline-block;margin-top:12px}
+  .workbench,body.presentation .workbench{grid-template-columns:1fr}
+  #scene,body.presentation #scene{height:300px}
+  .readout{padding:12px}
+  .readout .value{font-size:19px}
+  .learn-grid,.model-columns,.plot-grid.two{grid-template-columns:1fr}
+  .right{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+  .right .card{margin-bottom:0}
+  .card{padding:16px}
+}
+@media(max-width:480px){
+  .right{grid-template-columns:1fr}
+  .readouts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #scene,body.presentation #scene{height:275px}
+  .mode{width:100%}
+  .mode button{flex:1}
+  .stage-top,.stage-bottom{padding:12px}
+  h1{font-size:21px}
+  .header-tools button{font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="shell top">
+    <div class="brand">
+      <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="20" r="18" fill="#17272e"/>
+        <circle cx="20" cy="20" r="11" fill="none" stroke="#8bc8b7" stroke-width="1"/>
+        <path d="M9 20H31" stroke="#f3f1eb" stroke-width="2"/>
+        <circle cx="10" cy="20" r="3" fill="#8bc8b7"/>
+        <circle cx="30" cy="20" r="3" fill="#8bc8b7"/>
+        <circle cx="20" cy="20" r="3" fill="#f3f1eb"/>
+      </svg>
+      <div><h1 id="brand-title"></h1><small id="brand-sub"></small></div>
+    </div>
+    <div class="header-tools">
+      <button id="language" data-action="language"></button>
+      <button id="presentation" data-action="presentation" aria-pressed="false"></button>
+    </div>
+  </div>
+</header>
+<main class="shell">
+  <div class="toolbar">
+    <nav class="tabs" id="tabs" aria-label="實驗選擇"></nav>
+    <div class="mode" role="group" id="mode-group" aria-label="教學模式">
+      <button data-action="guided" id="guided"></button>
+      <button data-action="explore" id="explore"></button>
+    </div>
+  </div>
+  <section aria-labelledby="question">
+    <div class="question-row">
+      <div>
+        <div class="eyebrow" id="eyebrow"></div>
+        <h2 id="question"></h2>
+        <p id="context"></p>
+      </div>
+      <div class="status" id="status"></div>
+    </div>
+    <div class="workbench">
+      <div class="left">
+        <section class="stage" id="stage" aria-label="模擬舞台">
+          <div class="stage-top">
+            <strong id="stage-title"></strong>
+            <span class="stage-tag" id="ideal-tag"></span>
+          </div>
+          <canvas id="scene" role="img" aria-describedby="scene-description"></canvas>
+          <p id="scene-description" class="sr-only"></p>
+          <div class="readouts" id="readouts"></div>
+          <div class="stage-bottom">
+            <span id="clock"></span>
+            <span id="slow-label"></span>
+          </div>
+        </section>
+        <section class="card plot-card" aria-labelledby="plot-title">
+          <div class="plot-header">
+            <h3 id="plot-title"></h3>
+            <span id="plot-note"></span>
+          </div>
+          <div id="plots"></div>
+        </section>
+      </div>
+      <aside class="right" aria-label="實驗操作">
+        <section class="card" id="prediction-card"></section>
+        <section class="card" id="controls-card"></section>
+      </aside>
+    </div>
+    <div class="learn-grid secondary">
+      <section class="card" id="observation-card"></section>
+      <section class="card" id="exit-card"></section>
+    </div>
+  </section>
+  <section class="model secondary" id="model"></section>
+  <footer>
+    <span id="footer-left"></span>
+    <span id="footer-right"></span>
+  </footer>
+</main>
+<div id="live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+<script>
+"use strict";
+
+/* ---------- Configuration ---------- */
+const CONFIG = Object.freeze({
+  hubMass:0.080, hubRadius:0.020, weightMass:0.025,
+  radius:{min:1.5,max:6.0,step:0.1},
+  speed:{min:2,max:10,step:0.5},
+  torque:{min:0.00015,max:0.00120,step:0.00005},
+  defaults:{
+    compare:{rA:0.030,rB:0.055,speed:8,torque:0.00045},
+    conserve:{r:0.055,speed:6},
+    brake:{r:0.045,speed:8,torque:0.00045,brake:true}
+  },
+  fixedStep:1/120,
+  maxWallDelta:0.10,
+  sampleEverySteps:12,
+  maxSamples:900,
+  chartWindow:60,
+  chartInitialWindow:25,
+  moveDuration:0.9,
+  visualRate:0.025,
+  maxDPR:2,
+  observeAfter:0.5,
+  uiInterval:0.08,
+  epsilon:1e-12,
+  testTolerance:1e-9
+});
+
+/* ---------- Complete bilingual copy ---------- */
+const I18N = {
+zh:{
+  title:"爆旋陀螺物理實驗室",sub:"BEYBLADE PHYSICS LAB / 固定軸旋轉",
+  language:"English",presentation:"課堂展示",exitPresentation:"退出展示",
+  tabs:["質量分佈","角動量守恆","外力矩"],
+  guided:"引導模式",explore:"自由探索",modeLabel:"教學模式",tabsLabel:"實驗選擇",
+  eyebrow:"先預測 → 再觀察 → 用證據解釋",
+  questions:[
+    "一樣重、開始時轉得一樣快，是否會同時停下來？",
+    "正在旋轉時，把配重收近中心，轉速會怎樣？",
+    "角動量守恆，為甚麼真實陀螺仍會停？"
+  ],
+  contexts:[
+    "只改變配重位置；總質量、初始轉速與制動力矩相同。",
+    "沒有合外力矩；發射後只改變兩個配重的位置。",
+    "所選系統：旋轉裝置本身。觀察制動開關前後的變化。"
+  ],
+  stageNames:["雙裝置比較 · A / B","同步移動配重 · 固定 L₀","裝置與環境 · 外力矩"],
+  ideal:"理想化模型 · 俯視圖",stageLabel:"科學模擬舞台",asideLabel:"預測與實驗操作",
+  states:{unpredicted:"尚未預測",ready:"已預測，準備開始",exploreReady:"探索準備完成",
+    running:"運行中",paused:"已暫停",complete:"已停止"},
+  round:"第 {n} 輪",time:"模擬時間 {t} s",
+  slow:"視覺慢放 ×{n} · 數據使用真實模擬時間",
+  prediction:"先預測",controls:"實驗操作",observe:"觀察與解釋",exit:"離開前檢核",
+  predictions:[["A 先停","B 先停","同時停"],["轉快","轉慢","不變"],
+    ["有外力矩，裝置的角動量會改變","角動量守恆代表永遠不會停","角動量會自行消失"]],
+  predictionHint:"提交後保留本輪首次預測；先不判對錯。",
+  predictionSaved:"首次預測：{answer} · 已保存",
+  noPrediction:"請先選一個預測，再開始實驗。",
+  exploreHint:"探索不受預測限制，也不會記作測驗答案。",
+  oldPredictions:"查看先前預測",
+  oldRecord:"第 {n} 輪：{answer}",
+  start:"開始實驗",launch:"發射",resume:"恢復",pause:"暫停",
+  reset:"重設",defaults:"恢復預設",resetEdit:"重設並修改",
+  lock:"比較條件已鎖定。需要修改時，先按「重設並修改」。",
+  launchLock:"初始轉速已鎖定；重設後才可修改。",
+  target:"配重目標半徑",currentRadius:"目前半徑",
+  radiusA:"A 配重半徑",radiusB:"B 配重半徑",fixedRadius:"固定配重半徑",
+  speed:"初始轉速",torque:"制動力矩大小",brakeOn:"制動：開啟",brakeOff:"制動：關閉",
+  idealMode:"理想無阻力",brakeMode:"有制動力矩",
+  inward:"收近中心",outward:"移向外圈",
+  pausedTarget:"暫停中只設定目標；恢復後才移動。",
+  targetHint:"兩個配重同步移動；數據跟隨實際半徑。",
+  brakeHint:"運行中可切換及調整；不會重新發射。",
+  relaunchHint:"已停止。關閉制動不會重啟；重設後重新發射。",
+  mass:"總質量",sameMass:"兩者總質量相同：{m} g",
+  initialEqual:"相同初始轉速：{s} rev/s",
+  commonTorque:"共同制動力矩：{v} N·m",
+  noTorque:"合外力矩 = 0 N·m",
+  externalTorque:"外力矩 τ_ext",
+  stoppedTorque:"停止後制动不令裝置反轉",
+  a:"A · 內側設定",b:"B · 外側設定",
+  deviceA:"裝置 A",deviceB:"裝置 B",
+  omegaA:"A 轉速",omegaB:"B 轉速",inertiaA:"A 轉動慣量",inertiaB:"B 轉動慣量",
+  stopA:"A 停止時間",stopB:"B 停止時間",
+  inertia:"轉動慣量 I",omega:"轉速 ω / 2π",momentum:"軸向角動量 L",
+  awaiting:"待觀察",zero:"靜止",
+  plots:"模型歷史數據",plotNote:"每 0.1 s 採樣 · 各圖使用獨立單位與固定尺度",
+  plotRolling:"顯示最近 {n} s · y 軸本輪固定",
+  chartSpeed:"轉速 — 時間",chartI:"轉動慣量 — 時間",chartL:"角動量 — 時間",
+  timeAxis:"時間 / s",speedAxis:"轉速 / rev/s",iAxis:"I / kg·m²",lAxis:"L / kg·m²/s",
+  legendA:"A ━",legendB:"B ┄",emptyGraph:"開始後記錄數據",
+  chartAria:"{name}；曲線由本輪模擬歷史數據產生。主要數值另有文字讀數。",
+  observation:[
+    "追蹤兩條轉速曲線。哪條斜率較陡？留意每個裝置何時到達零。",
+    "先記下 L，再移動配重。比較實際半徑、I、轉速與 L 的變化。",
+    "先觀察制動開啟時的曲線，再關閉制動。轉速有沒有回到發射時的數值？"
+  ],
+  evidenceWait:"開始並觀察後，才可展開解釋及回答檢核題。",
+  reveal:"用證據解釋",
+  explanations:[
+    "在相同初始轉速和相同制動力矩下，轉動慣量較大的裝置，轉速下降較慢。配重離軸較遠會增加 I，但不會增加總質量。",
+    "沒有合外力矩時，角動量保持不變。配重收近中心使轉動慣量減少，所以角速度增加。發射後 L₀ 不會因配重移動而重設。",
+    "單獨看這個裝置，它受到外部制動力矩，所以角動量會改變。這不違反角動量守恆。關閉制動後，保持當前角動量與轉速，不會自動加速。"
+  ],
+  limits:[
+    "這個結果依賴本實驗控制條件，不代表外圈較重的真實陀螺一定轉得更久或一定勝出。若 A、B 半徑相同，兩者會同時停止；標籤不決定答案。",
+    "這是可移動配重的理想化旋轉裝置。一般爆旋陀螺在旋轉時不會自行把外圈收起來。",
+    "這裏以恆定制動力矩，簡化真實的接觸摩擦及空氣阻力；不是完整的空氣阻力模型。真實情況下，角動量可以轉移到環境，旋轉動能則可轉化為內能、聲音等。"
+  ],
+  teacher:"教師說明：功與能量",
+  energy:"配重移動需要機構做功。角動量守恆不代表旋轉動能不變。K_rot = ½Iω² 只表示旋轉動能，不包含配重徑向運動的完整總動能。這個模型未計算移動機構或徑向運動的能量。",
+  exitQuestions:[
+    "同樣的制動力矩下，某裝置減速較慢。甚麼證據最能支持解釋？",
+    "配重收近時，I 下降、L 保持不變。轉速增加的原因是甚麼？",
+    "裝置仍在轉動時關閉制動，接着會怎樣？"
+  ],
+  exitOptions:[
+    ["它的轉動慣量較大","它的總質量必定增加了","它一定沒有外力矩"],
+    ["較小的 I 需配合較大的 ω，才能保持 Iω 不變","配重收近令總質量增加","角動量守恆代表旋轉動能必定不變"],
+    ["保持關閉制動時的轉速","自動恢復初始轉速","立刻停止"]
+  ],
+  good:"有證據支持。請用本輪曲線與數值說明你的理由。",
+  tryAgain:"再看本輪的 I、轉速及 L。可以修正答案；不要只猜選項。",
+  exploreAnswer:"探索回饋，不計作測驗答案。",
+  modelTitle:"理想模型與符號",
+  modelText:"固定的垂直對稱軸；均勻中央輪盤；兩個等質量、對稱配重近似為質點。所有旋轉使用同一正方向。不模擬傾倒、進動、碰撞或場地移動。",
+  scalar:"L 是這個固定軸模型的軸向角動量純量，不是任意三維運動的完整角動量向量。配重移動只改變質量分佈，總質量不變。",
+  symbols:"M：中央輪盤質量；R：輪盤半徑；m：每個配重質量；r：配重離軸距離；ω：角速度。",
+  units:"內部使用 SI 單位；ω = 2π × rev/s。界面轉速以 rev/s 顯示。",
+  modelConstants:"中央輪盤 {M} g，半徑 {R} cm；每個配重 {m} g。",
+  footerLeft:"原創旋轉裝置 · 離線運行 · 無外部依賴",
+  footerRight:"10 分鐘建議：比較 4 分鐘 · 守恆 3 分鐘 · 外力矩 3 分鐘",
+  announcePrediction:"預測已保存。可以開始實驗。",
+  announceReset:"本輪已重設。條件已解鎖。",
+  announceNew:"關鍵條件已更改；新一輪需要重新預測。",
+  announceTab:"已切換實驗。原有運行已暫停。",
+  announceHidden:"頁面離開前景，實驗已暫停；請按恢復。",
+  announceMode:"已切換教學模式；物理狀態與設定保持不變。",
+  announceTarget:"配重目標已設定。",
+  announceBrake:"制動已切換；保留目前角動量。",
+  sceneDescription:"俯視固定軸旋轉裝置。兩個相同配重位於轉軸兩側，與轉軸距離相同。視覺慢放不改變物理數據。下方提供轉速、轉動慣量與角動量等文字讀數。",
+  rotation:"正方向 ↺",radiusLegend:"r：實際離軸距離",
+  moving:"配重移動中",holding:"配重位置固定",
+  rangeAria:"{name}，單位 {unit}",
+  exploreFinished:"探索回饋已顯示。",
+  answerSaved:"檢核回饋已顯示。"
+},
+en:{
+  title:"Beyblade Physics Lab",sub:"ROTATIONAL STUDIES / FIXED-AXIS MODEL",
+  language:"繁體中文",presentation:"Class display",exitPresentation:"Exit display",
+  tabs:["Mass distribution","Angular momentum","External torque"],
+  guided:"Guided",explore:"Free exploration",modeLabel:"Learning mode",tabsLabel:"Choose an experiment",
+  eyebrow:"Predict → Observe → Explain with evidence",
+  questions:[
+    "Same mass and initial speed. Will both stop together?",
+    "What happens to the speed when spinning weights move inward?",
+    "If angular momentum is conserved, why do real tops stop?"
+  ],
+  contexts:[
+    "Change only weight positions; total mass, initial speed and braking torque are equal.",
+    "Zero net external torque. After launch, change only the positions of the two weights.",
+    "Selected system: the rotating device itself. Compare braking on and off."
+  ],
+  stageNames:["Two-device comparison · A / B","Moving symmetric weights · Fixed L₀","Device and surroundings · External torque"],
+  ideal:"IDEALISED MODEL · TOP VIEW",stageLabel:"Scientific simulation stage",asideLabel:"Prediction and experiment controls",
+  states:{unpredicted:"Prediction needed",ready:"Predicted · Ready",exploreReady:"Ready to explore",
+    running:"Running",paused:"Paused",complete:"Stopped"},
+  round:"Round {n}",time:"Model time {t} s",
+  slow:"Visual slow motion ×{n} · Data use actual model time",
+  prediction:"Predict first",controls:"Experiment controls",observe:"Observe and explain",exit:"Exit check",
+  predictions:[["A stops first","B stops first","They stop together"],["Faster","Slower","Unchanged"],
+    ["External torque changes the device's angular momentum","Conservation means it can never stop","Angular momentum disappears by itself"]],
+  predictionHint:"Your first prediction is saved for this round; no answer is revealed yet.",
+  predictionSaved:"First prediction: {answer} · Saved",
+  noPrediction:"Choose a prediction before starting.",
+  exploreHint:"Explore without a prediction gate. Exploration is not recorded as a quiz answer.",
+  oldPredictions:"Previous predictions",
+  oldRecord:"Round {n}: {answer}",
+  start:"Start experiment",launch:"Launch",resume:"Resume",pause:"Pause",
+  reset:"Reset",defaults:"Restore defaults",resetEdit:"Reset and edit",
+  lock:"Comparison conditions are locked. Choose “Reset and edit” to change them.",
+  launchLock:"Initial speed is locked. Reset before changing it.",
+  target:"Target weight radius",currentRadius:"Current radius",
+  radiusA:"A weight radius",radiusB:"B weight radius",fixedRadius:"Fixed weight radius",
+  speed:"Initial speed",torque:"Braking torque magnitude",brakeOn:"Braking: on",brakeOff:"Braking: off",
+  idealMode:"Ideal: no resistance",brakeMode:"Braking torque",
+  inward:"Move inward",outward:"Move outward",
+  pausedTarget:"Paused: set a target now; movement starts on resume.",
+  targetHint:"Both weights move together; data follow the actual radius.",
+  brakeHint:"Toggle and adjust during a run without relaunching.",
+  relaunchHint:"Stopped. Removing braking does not restart it; reset and launch again.",
+  mass:"Total mass",sameMass:"Equal total mass: {m} g each",
+  initialEqual:"Equal initial speed: {s} rev/s",
+  commonTorque:"Shared braking torque: {v} N·m",
+  noTorque:"Net external torque = 0 N·m",
+  externalTorque:"External torque τ_ext",
+  stoppedTorque:"Braking does not reverse a stopped device",
+  a:"A · Inner preset",b:"B · Outer preset",
+  deviceA:"Device A",deviceB:"Device B",
+  omegaA:"A speed",omegaB:"B speed",inertiaA:"A moment of inertia",inertiaB:"B moment of inertia",
+  stopA:"A stopping time",stopB:"B stopping time",
+  inertia:"Moment of inertia I",omega:"Speed ω / 2π",momentum:"Axial angular momentum L",
+  awaiting:"Not yet observed",zero:"At rest",
+  plots:"Model history",plotNote:"Sampled every 0.1 s · Separate units and fixed scales",
+  plotRolling:"Last {n} s shown · Fixed y scales for this run",
+  chartSpeed:"Speed against time",chartI:"Moment of inertia against time",chartL:"Angular momentum against time",
+  timeAxis:"Time / s",speedAxis:"Speed / rev/s",iAxis:"I / kg·m²",lAxis:"L / kg·m²/s",
+  legendA:"A ━",legendB:"B ┄",emptyGraph:"Data are recorded after starting",
+  chartAria:"{name}. Curves use this round's model history. Important values are also available as text.",
+  observation:[
+    "Track both speed curves. Which has a steeper slope? Note when each device reaches zero.",
+    "Note L before moving the weights. Compare actual radius, I, speed and L.",
+    "Observe with braking on, then switch it off. Does the speed return to its launch value?"
+  ],
+  evidenceWait:"Start and observe before opening the explanation or answering the exit check.",
+  reveal:"Explain with evidence",
+  explanations:[
+    "With equal initial speeds and equal braking torques, the device with greater moment of inertia slows more gradually. Moving the weights farther from the axis increases I, not total mass.",
+    "With zero net external torque, angular momentum stays constant. Moving weights inward reduces moment of inertia, so angular speed increases. Moving weights after launch never resets L₀.",
+    "The device alone experiences an external braking torque, so its angular momentum changes. This does not violate conservation of angular momentum. Switching braking off preserves the current angular momentum and speed; it does not cause acceleration."
+  ],
+  limits:[
+    "This result depends on the controlled conditions. It does not mean a real top with more outer mass always spins longer or wins. Equal A and B radii give equal stopping times; labels do not determine the answer.",
+    "This idealised device has movable weights. Ordinary Beyblade-style tops do not pull their outer parts inward while spinning.",
+    "Constant braking torque simplifies real contact friction and air resistance; it is not a complete air-drag model. In real situations, angular momentum can transfer to the surroundings, while rotational kinetic energy can become internal energy, sound and other forms."
+  ],
+  teacher:"Teacher note: work and energy",
+  energy:"A mechanism must do work to move the weights. Conservation of angular momentum does not imply constant rotational kinetic energy. K_rot = ½Iω² is rotational kinetic energy only, not the complete kinetic energy including radial weight motion. This model does not calculate the energy of the moving mechanism or radial motion.",
+  exitQuestions:[
+    "Under the same braking torque, one device slows more gradually. Which evidence best supports an explanation?",
+    "The weights move inward: I falls while L remains constant. Why does speed increase?",
+    "Switch braking off while the device is still spinning. What happens next?"
+  ],
+  exitOptions:[
+    ["It has greater moment of inertia","Its total mass must have increased","It must have zero external torque"],
+    ["Smaller I requires larger ω to keep Iω constant","Moving inward increases total mass","Angular-momentum conservation requires constant rotational energy"],
+    ["It keeps the speed it had when braking was removed","It automatically returns to launch speed","It stops immediately"]
+  ],
+  good:"Supported by evidence. Use this run's curves and readings to explain your reasoning.",
+  tryAgain:"Revisit this run's I, speed and L. You can revise your answer; do not just guess.",
+  exploreAnswer:"Exploration feedback; not recorded as a quiz answer.",
+  modelTitle:"Ideal model and symbols",
+  modelText:"Fixed vertical symmetry axis; a uniform central disc; two equal, symmetric point-mass weights. A consistent positive rotation direction is used. No tipping, precession, collisions or arena motion.",
+  scalar:"L is the scalar axial angular momentum of this fixed-axis model, not the complete angular-momentum vector for arbitrary 3D motion. Moving the weights changes mass distribution, not total mass.",
+  symbols:"M: central disc mass; R: disc radius; m: each weight's mass; r: distance from the axis; ω: angular speed.",
+  units:"Internal calculations use SI units; ω = 2π × rev/s. Interface speeds are shown in rev/s.",
+  modelConstants:"Central disc: {M} g, radius {R} cm; each weight: {m} g.",
+  footerLeft:"Original device design · Works offline · No external dependencies",
+  footerRight:"Suggested 10 minutes: comparison 4 · conservation 3 · external torque 3",
+  announcePrediction:"Prediction saved. You can start the experiment.",
+  announceReset:"Round reset. Conditions are unlocked.",
+  announceNew:"A key condition changed. Make a new prediction for this round.",
+  announceTab:"Experiment switched. The previous run is paused.",
+  announceHidden:"The page left the foreground. The experiment is paused; choose Resume.",
+  announceMode:"Learning mode changed. Physics state and settings are unchanged.",
+  announceTarget:"Weight target set.",
+  announceBrake:"Braking switched; current angular momentum is preserved.",
+  sceneDescription:"Top view of a fixed-axis rotating device. Two equal weights are on opposite sides at equal distances from the axis. Visual slow motion does not change model data. Text readings below provide speed, moment of inertia and angular momentum.",
+  rotation:"Positive direction ↺",radiusLegend:"r: actual axis-to-weight distance",
+  moving:"Weights moving",holding:"Weights stationary",
+  rangeAria:"{name}, unit {unit}",
+  exploreFinished:"Exploration feedback displayed.",
+  answerSaved:"Exit-check feedback displayed."
+}
+};
+let lang="zh", mode="guided", active=0, presentation=false;
+const tr=(key,args={})=>{
+  let out=I18N[lang][key];
+  if(typeof out!=="string")return out;
+  return out.replace(/\{(\w+)\}/g,(_,k)=>args[k]??"");
+};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $=id=>document.getElementById(id);
+
+/* ---------- Pure physics ---------- */
+const TAU=2*Math.PI;
+const gToKg=x=>x/1000;
+const cmToM=x=>x/100;
+const revToRad=x=>TAU*x;
+const radToRev=x=>x/TAU;
+const moment=(r,M=CONFIG.hubMass,R=CONFIG.hubRadius,m=CONFIG.weightMass)=>0.5*M*R*R+2*m*r*r;
+const totalMass=()=>CONFIG.hubMass+2*CONFIG.weightMass;
+const angularSpeed=(L,I)=>L/I;
+const rotationalEnergy=(I,w)=>0.5*I*w*w;
+const stopTime=(I,w,tau)=>tau>0?I*Math.max(0,w)/tau:Infinity;
+const momentumAt=(L,tau,dt)=>Math.max(0,L-Math.max(0,tau)*Math.max(0,dt));
+const wrapAngle=a=>((a%TAU)+TAU)%TAU;
+const smooth=x=>x*x*(3-2*x);
+
+function brakeSegment(L,I,tau,dt){
+  const used=tau>0?Math.min(dt,Math.max(0,L)/tau):dt;
+  const next=momentumAt(L,tau,dt);
+  const angle=(Math.max(0,L)*used-0.5*tau*used*used)/I;
+  return {L:next,w:next/I,angle,used};
+}
+function radiusAtMove(move,dt){
+  const elapsed=Math.min(CONFIG.moveDuration,move.elapsed+dt);
+  const r=move.from+(move.to-move.from)*smooth(elapsed/CONFIG.moveDuration);
+  return {r,elapsed,done:elapsed>=CONFIG.moveDuration};
+}
+function conserveSegment(L,r,move,dt){
+  if(!move)return {r,w:L/moment(r),angle:L/moment(r)*dt,move:null};
+  const part=radiusAtMove(move,dt);
+  const half=radiusAtMove(move,dt/2);
+  const w0=L/moment(r),wm=L/moment(half.r),w1=L/moment(part.r);
+  return {
+    r:part.r,w:w1,angle:dt*(w0+4*wm+w1)/6,
+    move:part.done?null:{...move,elapsed:part.elapsed}
+  };
+}
+
+/* ---------- Independent experiment states ---------- */
+function makeState(id,params,round=1,records=[]){
+  const p={...params};
+  return {
+    id,p,round,records,prediction:null,quiz:null,quizMode:null,
+    launched:false,observed:false,status:"ready",t:0,ticks:0,
+    theta:[0,0],visual:[0,0],history:[],scales:null,
+    r:id===0?null:p.r,target:id===1?p.r:null,move:null,
+    L:0,L0:0,w:0,wA:0,wB:0,stops:[null,null]
+  };
+}
+const states=[
+  makeState(0,CONFIG.defaults.compare),
+  makeState(1,CONFIG.defaults.conserve),
+  makeState(2,CONFIG.defaults.brake)
+];
+const current=()=>states[active];
+
+function initialise(s){
+  s.launched=true;s.status="running";s.t=0;s.ticks=0;
+  s.theta=[0,0];s.visual=[0,0];s.history=[];s.stops=[null,null];
+  const w0=revToRad(s.p.speed);
+  if(s.id===0){
+    s.wA=w0;s.wB=w0;
+    s.scales={speed:s.p.speed*1.12};
+  }else{
+    s.r=s.p.r;s.w=w0;s.L=s.L0=moment(s.r)*w0;
+    if(s.id===1){
+      s.target=s.r;s.move=null;
+      s.scales={
+        inertia:moment(cmToM(CONFIG.radius.max))*1.12,
+        speed:radToRev(s.L/moment(cmToM(CONFIG.radius.min)))*1.12,
+        momentum:s.L0*1.2
+      };
+    }else{
+      s.scales={speed:s.p.speed*1.12,momentum:s.L0*1.2};
+    }
+  }
+  appendSample(s);
+}
+
+function sampleValues(s,time=s.t){
+  if(s.id===0){
+    const w0=revToRad(s.p.speed);
+    return {
+      t:time,
+      speedA:radToRev(Math.max(0,w0-s.p.torque*time/moment(s.p.rA))),
+      speedB:radToRev(Math.max(0,w0-s.p.torque*time/moment(s.p.rB)))
+    };
+  }
+  return {t:time,inertia:moment(s.r),speed:radToRev(s.w),momentum:s.L};
+}
+function appendSample(s,time=s.t){
+  const v=sampleValues(s,time),last=s.history[s.history.length-1];
+  if(last&&Math.abs(last.t-time)<CONFIG.epsilon)s.history[s.history.length-1]=v;
+  else s.history.push(v);
+  if(s.history.length>CONFIG.maxSamples)s.history.splice(0,s.history.length-CONFIG.maxSamples);
+}
+function rotateState(s,index,angle){
+  s.theta[index]=wrapAngle(s.theta[index]+angle);
+  s.visual[index]=wrapAngle(s.visual[index]+angle*CONFIG.visualRate);
+}
+function advanceSimulation(s,dt){
+  if(s.status!=="running"||!s.launched)return;
+  const before=s.t;
+  let h=dt;
+  if(s.id===0){
+    const stopA=stopTime(moment(s.p.rA),revToRad(s.p.speed),s.p.torque);
+    const stopB=stopTime(moment(s.p.rB),revToRad(s.p.speed),s.p.torque);
+    const end=Math.max(stopA,stopB);
+    h=Math.min(dt,Math.max(0,end-before));
+    const a=brakeSegment(moment(s.p.rA)*s.wA,moment(s.p.rA),s.p.torque,h);
+    const b=brakeSegment(moment(s.p.rB)*s.wB,moment(s.p.rB),s.p.torque,h);
+    s.wA=a.w;s.wB=b.w;
+    rotateState(s,0,a.angle);rotateState(s,1,b.angle);
+    s.t=before+h;
+    const events=[];
+    [stopA,stopB].forEach((at,i)=>{
+      if(s.stops[i]===null&&at<=s.t+CONFIG.epsilon){
+        s.stops[i]=at;events.push(at);
+        if(i===0)s.wA=0;else s.wB=0;
+      }
+    });
+    events.sort((a,b)=>a-b).forEach(at=>appendSample(s,at));
+    if(s.t>=end-CONFIG.epsilon){
+      s.t=end;s.wA=0;s.wB=0;s.status="complete";
+    }
+  }else if(s.id===1){
+    const next=conserveSegment(s.L0,s.r,s.move,h);
+    s.r=next.r;s.w=next.w;s.L=s.L0;s.move=next.move;
+    rotateState(s,0,next.angle);
+    s.t+=h;
+  }else{
+    const tau=s.p.brake?s.p.torque:0;
+    const seg=brakeSegment(s.L,moment(s.r),tau,h);
+    if(tau>0&&s.L>0&&seg.L===0)h=seg.used;
+    s.L=seg.L;s.w=seg.w;
+    rotateState(s,0,seg.angle);
+    s.t+=h;
+    if(s.L===0)s.status="complete";
+  }
+  s.ticks++;
+  if(s.t>=CONFIG.observeAfter)s.observed=true;
+  if(s.ticks%CONFIG.sampleEverySteps===0||s.status==="complete")appendSample(s);
+}
+function setWeightTarget(s,target){
+  target=Math.min(cmToM(CONFIG.radius.max),Math.max(cmToM(CONFIG.radius.min),target));
+  s.target=target;
+  if(!s.launched){s.r=target;s.p.r=target;return;}
+  if(Math.abs(target-s.r)<CONFIG.epsilon){s.move=null;return;}
+  s.move={from:s.r,to:target,elapsed:0};
+}
+function resetState(id,defaults=false){
+  const old=states[id];
+  const progressed=old.launched||old.prediction!==null||defaults;
+  states[id]=makeState(id,defaults?CONFIG.defaults[["compare","conserve","brake"][id]]:old.p,
+    old.round+(progressed?1:0),old.records);
+}
+function changeInitial(s,key,value){
+  if(s.p[key]===value)return;
+  const id=s.id,hadRound=s.launched||s.prediction!==null;
+  const p={...s.p,[key]:value};
+  states[id]=makeState(id,p,s.round+(hadRound?1:0),s.records);
+  if(hadRound)announce(tr("announceNew"));
+}
+function canStart(s){
+  return s.status==="paused"||(s.status==="ready"&&(mode==="explore"||s.prediction!==null));
+}
+function pauseCurrent(){
+  const s=current();
+  if(s.status==="running"){s.status="paused";accumulator=0;return true;}
+  return false;
+}
+
+/* ---------- Formatting ---------- */
+function scientific(x,digits=2){
+  if(!Number.isFinite(x))return "—";
+  if(x===0)return "0";
+  const exponent=Math.floor(Math.log10(Math.abs(x)));
+  const mantissa=(x/10**exponent).toFixed(digits);
+  const superDigits={"-":"⁻","0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹"};
+  return `${mantissa} × 10${String(exponent).split("").map(c=>superDigits[c]).join("")}`;
+}
+const fixed=(x,n=2)=>Number.isFinite(x)?x.toFixed(n):"—";
+function announce(message){$("live").textContent=message;}
+function displayState(s){
+  if(s.status==="ready")return s.prediction!==null?"ready":mode==="guided"?"unpredicted":"exploreReady";
+  return s.status;
+}
+function readout(key,label,unit,style=""){
+  return `<div class="readout ${style}"><label>${esc(label)}</label><div class="value" data-read="${key}">—</div><div class="unit">${esc(unit)}</div></div>`;
+}
+function slider(key,label,min,max,step,value,unit){
+  return `<div class="control">
+    <div class="control-label"><label for="input-${key}">${esc(label)}</label><output for="input-${key}" id="output-${key}"></output></div>
+    <input id="input-${key}" data-input="${key}" type="range" min="${min}" max="${max}" step="${step}" value="${value}" aria-label="${esc(tr("rangeAria",{name:label,unit}))}">
+  </div>`;
+}
+
+/* ---------- UI construction; listeners are attached only once ---------- */
+function buildUI(){
+  const s=current(),d=I18N[lang],id=active;
+  document.documentElement.lang=lang==="zh"?"zh-Hant":"en";
+  document.title=tr("title")+" · Physics Lab";
+  $("brand-title").textContent=tr("title");$("brand-sub").textContent=tr("sub");
+  $("language").textContent=tr("language");
+  $("language").setAttribute("aria-label",lang==="zh"?"Switch to English":"切換至繁體中文");
+  $("presentation").textContent=tr(presentation?"exitPresentation":"presentation");
+  $("presentation").setAttribute("aria-pressed",String(presentation));
+  $("tabs").setAttribute("aria-label",tr("tabsLabel"));
+  $("tabs").innerHTML=d.tabs.map((name,i)=>`<button class="tab ${i===id?"active":""}" data-action="tab" data-id="${i}" aria-current="${i===id?"page":"false"}"><span>0${i+1}</span>${esc(name)}</button>`).join("");
+  $("guided").textContent=tr("guided");$("explore").textContent=tr("explore");
+  ["guided","explore"].forEach(m=>{
+    $(m).classList.toggle("selected",mode===m);
+    $(m).setAttribute("aria-pressed",String(mode===m));
+  });
+  $("mode-group").setAttribute("aria-label",tr("modeLabel"));
+  $("eyebrow").textContent=tr("eyebrow");
+  $("question").textContent=d.questions[id];
+  $("context").textContent=d.contexts[id];
+  $("stage-title").textContent=d.stageNames[id];
+  $("ideal-tag").textContent=tr("ideal");
+  $("stage").setAttribute("aria-label",tr("stageLabel"));
+  document.querySelector("aside").setAttribute("aria-label",tr("asideLabel"));
+  $("scene-description").textContent=tr("sceneDescription");
+  $("scene").setAttribute("aria-label",d.stageNames[id]);
+  $("slow-label").textContent=tr("slow",{n:fixed(CONFIG.visualRate,3)});
+  if(id===0){
+    $("readouts").innerHTML=
+      readout("wA",tr("omegaA"),"rev/s","a")+readout("wB",tr("omegaB"),"rev/s","b")+
+      readout("mass",tr("mass"),"g · A = B")+
+      readout("iA",tr("inertiaA"),"kg·m²","a")+readout("iB",tr("inertiaB"),"kg·m²","b")+
+      readout("stops",tr("stopA")+" / "+tr("stopB"),"s");
+  }else{
+    $("readouts").innerHTML=
+      readout("i",tr("inertia"),"kg·m²","a")+
+      readout("w",tr("omega"),"rev/s","b")+
+      readout("L",tr("momentum"),"kg·m²/s","l")+
+      readout("r",tr("currentRadius"),"cm")+
+      readout("mass",tr("mass"),"g")+
+      readout("tau",tr("externalTorque"),"N·m");
+  }
+  const records=s.records.filter(rec=>rec.round!==s.round);
+  $("prediction-card").innerHTML=`
+    <h3 class="step-title"><span class="step-number">1</span>${esc(tr("prediction"))}</h3>
+    <div class="predict-options" role="group" aria-label="${esc(tr("prediction"))}">
+      ${d.predictions[id].map((v,i)=>`<button data-action="predict" data-id="${i}" aria-pressed="${s.prediction===i}">${esc(v)}</button>`).join("")}
+    </div>
+    <p class="note" id="prediction-hint"></p>
+    <p class="saved" id="prediction-saved"></p>
+    ${records.length?`<details class="secondary"><summary>${esc(tr("oldPredictions"))}</summary>${records.map(r=>`<p class="note">${esc(tr("oldRecord",{n:r.round,answer:d.predictions[id][r.choice]}))}</p>`).join("")}</details>`:""}`;
+  const radius=CONFIG.radius,speed=CONFIG.speed,torque=CONFIG.torque;
+  let controls="";
+  if(id===0){
+    controls+=slider("rA",tr("radiusA"),radius.min,radius.max,radius.step,s.p.rA*100,"cm");
+    controls+=slider("rB",tr("radiusB"),radius.min,radius.max,radius.step,s.p.rB*100,"cm");
+  }else if(id===1){
+    controls+=slider("target",tr("target"),radius.min,radius.max,radius.step,s.target*100,"cm");
+    controls+=`<div class="inline-actions"><button data-action="inward">${esc(tr("inward"))}</button><button data-action="outward">${esc(tr("outward"))}</button></div><p class="note" id="target-hint"></p>`;
+  }else{
+    controls+=slider("r",tr("fixedRadius"),radius.min,radius.max,radius.step,s.p.r*100,"cm");
+  }
+  controls+=slider("speed",tr("speed"),speed.min,speed.max,speed.step,s.p.speed,"rev/s");
+  if(id!==1){
+    controls+=slider("torque",tr("torque"),torque.min,torque.max,torque.step,s.p.torque,"N·m");
+  }
+  if(id===2){
+    controls+=`<button data-action="brake" id="brake-toggle" aria-pressed="${s.p.brake}"></button><p class="note" id="brake-hint"></p>`;
+  }
+  $("controls-card").innerHTML=`
+    <h3 class="step-title"><span class="step-number">2</span>${esc(tr("controls"))}</h3>
+    <div class="controls">${controls}</div>
+    <p class="note" id="lock-note"></p>
+    <div class="control-actions">
+      <button class="primary wide" data-action="play" id="play"></button>
+      <button data-action="reset">${esc(tr("reset"))}</button>
+      <button data-action="defaults">${esc(tr("defaults"))}</button>
+      <button data-action="edit" id="edit" class="wide soft">${esc(tr("resetEdit"))}</button>
+    </div>`;
+  $("plot-title").textContent=tr("plots");
+  const plotDefs=id===0?[["compare","chartSpeed"]]:id===1?
+    [["inertia","chartI"],["speed","chartSpeed"],["momentum","chartL"]]:
+    [["speed","chartSpeed"],["momentum","chartL"]];
+  $("plots").className=plotDefs.length===1?"":"plot-grid"+(plotDefs.length===2?" two":"");
+  $("plots").innerHTML=plotDefs.map(([key,name])=>`<div class="plot ${plotDefs.length===1?"single":""}"><p class="plot-name">${esc(tr(name))}</p><canvas data-chart="${key}" role="img" aria-label="${esc(tr("chartAria",{name:tr(name)}))}"></canvas></div>`).join("");
+  $("observation-card").innerHTML=`
+    <h3 class="step-title"><span class="step-number">3</span>${esc(tr("observe"))}</h3>
+    <p class="note">${esc(d.observation[id])}</p>
+    <p class="note" id="evidence-wait">${esc(tr("evidenceWait"))}</p>
+    <div id="explanation" hidden>
+      <details><summary>${esc(tr("reveal"))}</summary>
+        <p>${esc(d.explanations[id])}</p>
+        <div class="equation">${id===0?"α = −τ_b / I &nbsp; | &nbsp; t_stop = Iω₀ / τ_b":id===1?"L = L₀ = Iω &nbsp; | &nbsp; ω = L₀ / I(r)":"L_new = max(0, L_current − τ_b Δt) &nbsp; | &nbsp; ω = L / I"}</div>
+        <p class="note">${esc(d.limits[id])}</p>
+      </details>
+      ${id===1?`<details><summary>${esc(tr("teacher"))}</summary><p class="note">${esc(tr("energy"))}</p></details>`:""}
+    </div>`;
+  $("exit-card").innerHTML=`
+    <h3>${esc(tr("exit"))}</h3>
+    <p class="note">${esc(d.exitQuestions[id])}</p>
+    <div class="exit-options">${d.exitOptions[id].map((option,i)=>`<button data-action="quiz" data-id="${i}">${esc(option)}</button>`).join("")}</div>
+    <p id="quiz-feedback" class="feedback" hidden></p>`;
+  $("model").innerHTML=`
+    <details><summary>${esc(tr("modelTitle"))}</summary>
+      <div class="model-columns">
+        <div><p>${esc(tr("modelText"))}</p><p>${esc(tr("scalar"))}</p>
+          <p>${esc(tr("modelConstants",{M:CONFIG.hubMass*1000,R:CONFIG.hubRadius*100,m:CONFIG.weightMass*1000}))}</p></div>
+        <div><div class="equation">I_hub = ½MR²<br>I = I_hub + 2mr²<br>L = Iω<br>K_rot = ½Iω²</div><p>${esc(tr("symbols"))}</p><p>${esc(tr("units"))}</p></div>
+      </div>
+    </details>`;
+  $("footer-left").textContent=tr("footerLeft");$("footer-right").textContent=tr("footerRight");
+  connectResizeObservers();
+  syncUI();
+  renderGraphics();
+}
+
+function syncUI(){
+  const s=current(),d=I18N[lang],id=s.id;
+  $("status").textContent=tr("round",{n:s.round})+" · "+d.states[displayState(s)];
+  $("status").classList.toggle("running",s.status==="running");
+  $("clock").textContent=tr("time",{t:fixed(s.t,2)});
+  const predictions=document.querySelectorAll('[data-action="predict"]');
+  predictions.forEach((btn,i)=>{
+    btn.disabled=mode==="explore"||s.prediction!==null||s.launched;
+    btn.setAttribute("aria-pressed",String(s.prediction===i));
+  });
+  $("prediction-hint").textContent=mode==="explore"?tr("exploreHint"):s.prediction===null?tr("noPrediction"):tr("predictionHint");
+  $("prediction-saved").textContent=s.prediction===null?"":tr("predictionSaved",{answer:d.predictions[id][s.prediction]});
+  $("play").textContent=s.status==="running"?tr("pause"):s.status==="paused"?tr("resume"):tr(id===0?"start":"launch");
+  $("play").disabled=s.status!=="running"&&!canStart(s);
+  $("edit").hidden=!s.launched;
+  $("lock-note").textContent=s.launched?tr(id===0?"lock":"launchLock"):"";
+  document.querySelectorAll("[data-input]").forEach(input=>{
+    const key=input.dataset.input;
+    input.disabled=s.launched&&!(id===1&&key==="target")&&!(id===2&&key==="torque");
+    const v=Number(input.value);
+    const unit=["r","rA","rB","target"].includes(key)?"cm":key==="speed"?"rev/s":"N·m";
+    const text=(key==="torque"?scientific(v):fixed(v,key==="speed"?1:1))+" "+unit;
+    $("output-"+key).textContent=text;
+    input.setAttribute("aria-valuetext",text);
+  });
+  if(id===1){
+    $("target-hint").textContent=tr(s.status==="paused"?"pausedTarget":"targetHint");
+  }
+  if(id===2){
+    $("brake-toggle").textContent=tr(s.p.brake?"brakeOn":"brakeOff");
+    $("brake-toggle").setAttribute("aria-pressed",String(s.p.brake));
+    $("brake-hint").textContent=tr(s.status==="complete"?"relaunchHint":"brakeHint");
+  }
+  const values={mass:fixed(totalMass()*1000,0)};
+  if(id===0){
+    values.wA=fixed(s.launched?radToRev(s.wA):s.p.speed);
+    values.wB=fixed(s.launched?radToRev(s.wB):s.p.speed);
+    values.iA=scientific(moment(s.p.rA));values.iB=scientific(moment(s.p.rB));
+    values.stops=s.stops.map(v=>v===null?"—":fixed(v,2)).join(" / ");
+  }else{
+    values.i=scientific(moment(s.r));
+    values.w=fixed(s.launched?radToRev(s.w):s.p.speed);
+    values.L=scientific(s.launched?s.L:moment(s.r)*revToRad(s.p.speed));
+    values.r=fixed(s.r*100,2);
+    values.tau=id===1||!s.p.brake?"0":"−"+scientific(s.p.torque);
+  }
+  document.querySelectorAll("[data-read]").forEach(el=>{
+    const value=values[el.dataset.read]??"—";
+    if(el.textContent!==value)el.textContent=value;
+  });
+  $("evidence-wait").hidden=s.observed;
+  $("explanation").hidden=!s.observed;
+  document.querySelectorAll('[data-action="quiz"]').forEach((btn,i)=>{
+    btn.disabled=!s.observed;
+    btn.classList.toggle("selected",s.quiz===i);
+    btn.setAttribute("aria-pressed",String(s.quiz===i));
+  });
+  $("quiz-feedback").hidden=s.quiz===null;
+  if(s.quiz!==null){
+    $("quiz-feedback").textContent=(s.quizMode==="explore"?tr("exploreAnswer")+" ":"")+tr(s.quiz===0?"good":"tryAgain");
+  }
+  $("plot-note").textContent=s.t>CONFIG.chartWindow?
+    tr("plotRolling",{n:CONFIG.chartWindow}):tr("plotNote");
+}
+
+/* ---------- Canvas sizing ---------- */
+let resizeObserver=null;
+function prepareCanvas(canvas){
+  const rect=canvas.getBoundingClientRect();
+  const w=Math.max(1,rect.width),h=Math.max(1,rect.height);
+  const dpr=Math.min(CONFIG.maxDPR,window.devicePixelRatio||1);
+  const pw=Math.round(w*dpr),ph=Math.round(h*dpr);
+  if(canvas.width!==pw||canvas.height!==ph){canvas.width=pw;canvas.height=ph;}
+  const ctx=canvas.getContext("2d");
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,w,h);
+  return {ctx,w,h};
+}
+function connectResizeObservers(){
+  if(resizeObserver)resizeObserver.disconnect();
+  if(typeof ResizeObserver!=="undefined"){
+    if(!resizeObserver)resizeObserver=new ResizeObserver(()=>renderGraphics());
+    document.querySelectorAll("canvas").forEach(c=>resizeObserver.observe(c));
+  }
+}
+function text(ctx,value,x,y,size=12,color="#c1d4d7",align="left"){
+  ctx.fillStyle=color;ctx.font=`${size}px ${CONFIG.font||"system-ui, sans-serif"}`;
+  ctx.textAlign=align;ctx.fillText(value,x,y);
+}
+function arrow(ctx,cx,cy,r,color){
+  const start=-0.20,end=-1.35;
+  ctx.save();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.setLineDash([]);
+  ctx.beginPath();ctx.arc(cx,cy,r,start,end,true);ctx.stroke();
+  const x=cx+r*Math.cos(end),y=cy+r*Math.sin(end);
+  const a=end-Math.PI/2;
+  ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(x,y);
+  ctx.lineTo(x-9*Math.cos(a-.45),y-9*Math.sin(a-.45));
+  ctx.lineTo(x-9*Math.cos(a+.45),y-9*Math.sin(a+.45));ctx.closePath();ctx.fill();
+  ctx.restore();
+}
+function drawRotor(ctx,cx,cy,size,r,angle,color,w,braking){
+  const scale=size/cmToM(CONFIG.radius.max);
+  const hub=CONFIG.hubRadius*scale,rr=r*scale;
+  ctx.save();
+  ctx.strokeStyle="#35505a";ctx.lineWidth=1;
+  for(let i=1;i<=3;i++){
+    ctx.setLineDash(i===3?[]:[2,5]);
+    ctx.beginPath();ctx.arc(cx,cy,size*i/3,0,TAU);ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  for(let i=0;i<48;i++){
+    const a=i*TAU/48,major=i%4===0;
+    ctx.strokeStyle=major?"#67818a":"#3b535c";
+    ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*(size+5),cy+Math.sin(a)*(size+5));
+    ctx.lineTo(cx+Math.cos(a)*(size+(major?13:9)),cy+Math.sin(a)*(size+(major?13:9)));ctx.stroke();
+  }
+  ctx.strokeStyle="#29424d";ctx.beginPath();ctx.moveTo(cx-size-18,cy);ctx.lineTo(cx+size+18,cy);ctx.moveTo(cx,cy-size-18);ctx.lineTo(cx,cy+size+18);ctx.stroke();
+  arrow(ctx,cx,cy,size+23,"#9ed6c9");
+  if(braking&&w>0){
+    ctx.strokeStyle="#efb080";ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(cx,cy,size+31,1.0,2.0);ctx.stroke();
+    const a=2,x=cx+(size+31)*Math.cos(a),y=cy+(size+31)*Math.sin(a);
+    ctx.fillStyle="#efb080";ctx.beginPath();ctx.moveTo(x,y);
+    ctx.lineTo(x+2,y+10);ctx.lineTo(x+10,y+3);ctx.closePath();ctx.fill();
+  }
+  ctx.translate(cx,cy);
+  ctx.rotate(-angle);
+  const gradient=ctx.createRadialGradient(-hub*.3,-hub*.4,2,0,0,hub);
+  gradient.addColorStop(0,"#728b94");gradient.addColorStop(.65,"#425d67");gradient.addColorStop(1,"#273d48");
+  ctx.fillStyle=gradient;ctx.strokeStyle="#8aa2aa";ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.arc(0,0,hub,0,TAU);ctx.fill();ctx.stroke();
+  ctx.strokeStyle="#9eb4b9";ctx.lineWidth=1;
+  ctx.beginPath();ctx.arc(0,0,hub*.75,0,TAU);ctx.stroke();
+  ctx.lineWidth=7;ctx.strokeStyle="#0b1b23";
+  ctx.beginPath();ctx.moveTo(-size,0);ctx.lineTo(size,0);ctx.stroke();
+  ctx.lineWidth=2;ctx.strokeStyle="#68838d";ctx.stroke();
+  for(let i=-1;i<=1;i+=2){
+    ctx.fillStyle="#91b8bd";
+    for(let j=1;j<=6;j++){ctx.fillRect(i*size*j/6-1,-5,2,10);}
+    const wx=i*rr;
+    ctx.shadowColor="#0008";ctx.shadowBlur=9;ctx.shadowOffsetY=4;
+    ctx.fillStyle=color;ctx.strokeStyle="#f6f9f2";ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(wx,0,Math.max(7,size*.10),0,TAU);ctx.fill();ctx.stroke();
+    ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+    ctx.fillStyle="#11262c";ctx.beginPath();ctx.arc(wx,0,2.5,0,TAU);ctx.fill();
+    ctx.strokeStyle="#d9ebdc";ctx.lineWidth=1;ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.moveTo(0,14);ctx.lineTo(wx,14);ctx.stroke();ctx.setLineDash([]);
+  }
+  ctx.fillStyle="#e4ebe3";ctx.beginPath();ctx.arc(0,0,6,0,TAU);ctx.fill();
+  ctx.fillStyle="#233c46";ctx.beginPath();ctx.arc(0,0,2,0,TAU);ctx.fill();
+  ctx.restore();
+}
+function renderScene(){
+  const canvas=$("scene");
+  if(!canvas)return;
+  const {ctx,w,h}=prepareCanvas(canvas),s=current();
+  const bg=ctx.createLinearGradient(0,0,w,h);
+  bg.addColorStop(0,"#1c343d");bg.addColorStop(1,"#10222b");
+  ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
+  ctx.fillStyle="#789198";
+  for(let x=20;x<w;x+=32)for(let y=20;y<h;y+=32)ctx.fillRect(x,y,.7,.7);
+  if(s.id===0){
+    const size=Math.min(w*.175,h*.29),cy=h*.53;
+    ctx.strokeStyle="#35505a";ctx.beginPath();ctx.moveTo(w/2,45);ctx.lineTo(w/2,h-30);ctx.stroke();
+    [0,1].forEach(i=>{
+      const x=w*(i===0?.25:.75),r=i===0?s.p.rA:s.p.rB;
+      const speed=s.launched?(i===0?s.wA:s.wB):0;
+      drawRotor(ctx,x,cy,size,r,s.visual[i],i===0?"#8dbaff":"#f4ae78",speed,s.launched);
+      text(ctx,tr(i===0?"deviceA":"deviceB"),x,26,14,i===0?"#afd0ff":"#ffd0a9","center");
+      text(ctx,`r = ${fixed(r*100,1)} cm`,x,h-22,12,"#d1dee0","center");
+    });
+    text(ctx,tr("sameMass",{m:fixed(totalMass()*1000,0)}),w/2,48,w<450?10:12,"#c5d6d6","center");
+  }else{
+    const size=Math.min(w*.28,h*.31);
+    drawRotor(ctx,w/2,h*.53,size,s.r,s.visual[0],"#96d3c0",
+      s.launched?s.w:0,s.id===2&&s.p.brake&&s.launched);
+    text(ctx,s.id===1?tr("noTorque"):tr(s.p.brake?"brakeMode":"idealMode"),w/2,27,w<450?12:14,"#d1e4df","center");
+    text(ctx,s.id===1?tr(s.move?"moving":"holding"):tr("holding"),w/2,h-22,12,"#bbd2d6","center");
+  }
+  text(ctx,tr("rotation"),15,h-7,10,"#a6c8c6");
+}
+
+/* ---------- Charts: bounded real model history ---------- */
+function axisNumber(value,key){
+  if(value===0)return "0";
+  return key==="inertia"||key==="momentum"?value.toExponential(1):fixed(value,value<10?1:0);
+}
+function renderChart(canvas){
+  const {ctx,w,h}=prepareCanvas(canvas),s=current(),key=canvas.dataset.chart;
+  const left=w<300?58:66,right=13,top=31,bottom=42;
+  const gw=Math.max(1,w-left-right),gh=Math.max(1,h-top-bottom);
+  const tMax=Math.max(CONFIG.chartInitialWindow,s.t);
+  const tMin=Math.max(0,tMax-CONFIG.chartWindow);
+  let ymax,unit,series;
+  if(key==="compare"){
+    ymax=s.scales?.speed||s.p.speed*1.12;unit=tr("speedAxis");
+    series=[{key:"speedA",color:"#245bc0",dash:[],label:tr("legendA")},
+      {key:"speedB",color:"#b85421",dash:[6,4],label:tr("legendB")}];
+  }else{
+    ymax=s.scales?.[key]||(key==="inertia"?moment(cmToM(CONFIG.radius.max))*1.12:
+      key==="momentum"?moment(s.r)*revToRad(s.p.speed)*1.2:
+      s.id===1?radToRev(moment(s.r)*revToRad(s.p.speed)/moment(cmToM(CONFIG.radius.min)))*1.12:s.p.speed*1.12);
+    unit=tr(key==="inertia"?"iAxis":key==="momentum"?"lAxis":"speedAxis");
+    series=[{key,color:key==="inertia"?"#245bc0":key==="momentum"?"#087969":"#b85421",dash:[],label:""}];
+  }
+  text(ctx,unit,left,14,10,"#52636a");
+  if(key==="compare"){
+    text(ctx,tr("legendA"),w-96,14,11,"#245bc0");
+    text(ctx,tr("legendB"),w-48,14,11,"#b85421");
+  }
+  for(let i=0;i<=4;i++){
+    const y=top+gh*i/4,val=ymax*(1-i/4);
+    ctx.strokeStyle="#e0e5df";ctx.lineWidth=1;ctx.setLineDash([]);
+    ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(left+gw,y);ctx.stroke();
+    text(ctx,axisNumber(val,key),left-8,y+3,9,"#52636a","right");
+  }
+  for(let i=0;i<=4;i++){
+    const x=left+gw*i/4,val=tMin+(tMax-tMin)*i/4;
+    text(ctx,fixed(val,0),x,top+gh+17,10,"#52636a","center");
+  }
+  text(ctx,tr("timeAxis"),left+gw/2,h-5,10,"#52636a","center");
+  ctx.strokeStyle="#91a39c";ctx.beginPath();ctx.moveTo(left,top);ctx.lineTo(left,top+gh);ctx.lineTo(left+gw,top+gh);ctx.stroke();
+  if(!s.history.length){
+    text(ctx,tr("emptyGraph"),left+gw/2,top+gh/2,11,"#52636a","center");return;
+  }
+  ctx.save();ctx.beginPath();ctx.rect(left,top,gw,gh);ctx.clip();
+  for(const line of series){
+    ctx.strokeStyle=line.color;ctx.lineWidth=2.25;ctx.setLineDash(line.dash);ctx.beginPath();
+    let begun=false;
+    for(let i=0;i<s.history.length;i++){
+      const p=s.history[i];
+      if(p.t<tMin&&i+1<s.history.length&&s.history[i+1].t<tMin)continue;
+      const x=left+(p.t-tMin)/(tMax-tMin)*gw;
+      const y=top+gh-Math.max(0,p[line.key])/ymax*gh;
+      if(!begun){ctx.moveTo(x,y);begun=true;}else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    const last=s.history[s.history.length-1];
+    if(last.t>=tMin){
+      ctx.setLineDash([]);ctx.fillStyle=line.color;
+      ctx.beginPath();ctx.arc(left+(last.t-tMin)/(tMax-tMin)*gw,top+gh-Math.max(0,last[line.key])/ymax*gh,2.7,0,TAU);ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+function renderGraphics(){
+  renderScene();
+  document.querySelectorAll("[data-chart]").forEach(renderChart);
+}
+
+/* ---------- Input and teaching workflow ---------- */
+document.addEventListener("click",event=>{
+  const button=event.target.closest("button[data-action]");
+  if(!button||button.disabled)return;
+  const action=button.dataset.action,s=current();
+  if(action==="language"){
+    lang=lang==="zh"?"en":"zh";buildUI();$("language").focus();return;
+  }
+  if(action==="presentation"){
+    presentation=!presentation;document.body.classList.toggle("presentation",presentation);
+    buildUI();$("presentation").focus();return;
+  }
+  if(action==="tab"){
+    pauseCurrent();active=Number(button.dataset.id);
+    if(current().status==="running")current().status="paused";
+    accumulator=0;buildUI();announce(tr("announceTab"));
+    document.querySelector(`.tab[data-id="${active}"]`).focus();return;
+  }
+  if(action==="guided"||action==="explore"){
+    mode=action;buildUI();announce(tr("announceMode"));$(action).focus();return;
+  }
+  if(action==="predict"){
+    if(mode!=="guided"||s.prediction!==null||s.launched)return;
+    s.prediction=Number(button.dataset.id);
+    s.records.push({round:s.round,choice:s.prediction,conditions:{...s.p}});
+    syncUI();announce(tr("announcePrediction"));$("play").focus();return;
+  }
+  if(action==="play"){
+    if(s.status==="running"){
+      s.status="paused";accumulator=0;
+    }else if(s.status==="paused"){
+      s.status="running";accumulator=0;
+    }else if(canStart(s)){
+      initialise(s);accumulator=0;
+    }
+    syncUI();renderGraphics();announce(I18N[lang].states[displayState(s)]);return;
+  }
+  if(["reset","edit","defaults"].includes(action)){
+    resetState(active,action==="defaults");accumulator=0;buildUI();
+    announce(tr("announceReset"));
+    if(action==="edit")document.querySelector("[data-input]")?.focus();
+    else document.querySelector(`[data-action="${action}"]`)?.focus();
+    return;
+  }
+  if(action==="inward"||action==="outward"){
+    const target=cmToM(action==="inward"?CONFIG.radius.min:CONFIG.radius.max);
+    if(!s.launched){
+      changeInitial(s,"r",target);current().target=target;
+    }else setWeightTarget(s,target);
+    $("input-target").value=target*100;
+    syncUI();renderGraphics();announce(tr("announceTarget"));return;
+  }
+  if(action==="brake"){
+    if(s.launched)s.p.brake=!s.p.brake;
+    else changeInitial(s,"brake",!s.p.brake);
+    syncUI();renderGraphics();announce(tr("announceBrake"));return;
+  }
+  if(action==="quiz"&&s.observed){
+    s.quiz=Number(button.dataset.id);s.quizMode=mode;
+    syncUI();announce(tr(mode==="explore"?"exploreFinished":"answerSaved"));return;
+  }
+});
+document.addEventListener("input",event=>{
+  const input=event.target.closest("[data-input]");
+  if(!input||input.disabled)return;
+  const key=input.dataset.input,s=current();
+  let value=Number(input.value);
+  if(["rA","rB","r","target"].includes(key))value=cmToM(value);
+  if(key==="target"){
+    if(s.launched)setWeightTarget(s,value);
+    else{changeInitial(s,"r",value);current().target=value;}
+  }else if(s.id===2&&key==="torque"&&s.launched){
+    s.p.torque=value;
+  }else if(!s.launched){
+    changeInitial(s,key,value);
+  }
+  syncUI();renderGraphics();
+});
+document.addEventListener("change",event=>{
+  if(event.target.matches('[data-input="target"]'))announce(tr("announceTarget"));
+});
+document.addEventListener("keydown",event=>{
+  if(event.key==="Escape"&&presentation){
+    presentation=false;document.body.classList.remove("presentation");buildUI();$("presentation").focus();
+  }
+});
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden){
+    if(pauseCurrent()){syncUI();announce(tr("announceHidden"));}
+    accumulator=0;lastWall=null;
+  }else{lastWall=null;accumulator=0;syncUI();}
+});
+window.addEventListener("resize",()=>renderGraphics());
+
+/* ---------- One fixed-timestep animation loop ---------- */
+let lastWall=null,accumulator=0,lastUI=0,observedRendered=false;
+function frame(wall){
+  if(lastWall===null)lastWall=wall;
+  const delta=Math.min(CONFIG.maxWallDelta,Math.max(0,(wall-lastWall)/1000));
+  lastWall=wall;
+  const s=current(),before=s.status,wasObserved=s.observed;
+  if(!document.hidden&&s.status==="running"){
+    accumulator+=delta;
+    while(accumulator+CONFIG.epsilon>=CONFIG.fixedStep&&s.status==="running"){
+      advanceSimulation(s,CONFIG.fixedStep);
+      accumulator-=CONFIG.fixedStep;
+    }
+    if(s.status!=="running")accumulator=0;
+  }else accumulator=0;
+  if(wall-lastUI>=CONFIG.uiInterval*1000||before!==s.status||wasObserved!==s.observed){
+    syncUI();lastUI=wall;
+  }
+  if(before==="running"&&s.status==="complete")announce(I18N[lang].states.complete);
+  if(!document.hidden)renderGraphics();
+  requestAnimationFrame(frame);
+}
+
+/* ---------- Isolated physics and state self-tests ---------- */
+function runPhysicsSelfTests(){
+  let passed=0,failed=0;
+  const near=(a,b,tol=CONFIG.testTolerance)=>Math.abs(a-b)<=tol*Math.max(1,Math.abs(a),Math.abs(b));
+  const test=(name,fn)=>{
+    try{
+      if(!fn())throw new Error("Assertion returned false");
+      passed++;
+    }catch(error){
+      failed++;console.error(`[Physics self-test] ${name}:`,error);
+    }
+  };
+  const clone=o=>JSON.parse(JSON.stringify(o));
+  test("1. Moment-of-inertia formula",()=>near(moment(.05,.10,.02,.03),.5*.10*.02**2+2*.03*.05**2));
+  test("2. Equal total mass; larger radius gives larger I",()=>totalMass()===CONFIG.hubMass+2*CONFIG.weightMass&&moment(.05)>moment(.02));
+  test("3. I × omega equals fixed L at different radii",()=>[.015,.03,.06].every(r=>near(moment(r)*angularSpeed(.012,moment(r)),.012)));
+  test("4. Halving I doubles angular speed",()=>near(angularSpeed(.02,.004/2),2*angularSpeed(.02,.004)));
+  test("5. No braking preserves L and omega",()=>{
+    const x=brakeSegment(.02,.003,0,21);
+    return near(x.L,.02)&&near(x.w,.02/.003)&&near(x.angle,.02/.003*21);
+  });
+  test("6. Constant braking law and zero clamp",()=>near(momentumAt(.01,.0004,7),.0072)&&momentumAt(.01,.0004,30)===0);
+  test("7. Stopping time",()=>near(stopTime(.0002,40,.0005),16));
+  test("8. Stops without reversal; exact stop-angle integration",()=>{
+    const x=brakeSegment(.01,.001,.002,20);
+    return x.L===0&&x.w===0&&near(x.used,5)&&near(x.angle,25)&&brakeSegment(0,.001,.002,20).angle===0;
+  });
+  test("9. Larger I means longer stopping time under equal controls",()=>stopTime(moment(.055),50,.00045)>stopTime(moment(.03),50,.00045));
+  test("10. Removing braking retains L; stopped device cannot restart",()=>{
+    const reduced=brakeSegment(.01,.001,.001,3);
+    const coast=brakeSegment(reduced.L,.001,0,8);
+    const rest=brakeSegment(0,.001,0,8);
+    return near(coast.L,reduced.L)&&near(coast.w,reduced.w)&&rest.L===0&&rest.w===0;
+  });
+  test("11. SI conversions",()=>near(gToKg(80),.08)&&near(cmToM(5.5),.055)&&near(revToRad(6),12*Math.PI));
+  test("12. Pause freezes time, angles, history and radius",()=>{
+    const local=makeState(1,CONFIG.defaults.conserve);
+    initialise(local);setWeightTarget(local,.02);local.status="paused";
+    const snapshot=JSON.stringify(local);
+    advanceSimulation(local,3);
+    return snapshot===JSON.stringify(local);
+  });
+  test("13a. Braking is independent of update partition, including stopping",()=>{
+    const simulate=steps=>{
+      let L=.008,angle=0;
+      for(const dt of steps){const x=brakeSegment(L,.00017,.00045,dt);L=x.L;angle+=x.angle;}
+      return {L,angle};
+    };
+    const a=simulate([25]),b=simulate(Array(750).fill(25/750)),c=simulate(Array(3000).fill(25/3000));
+    return near(a.L,b.L)&&near(a.L,c.L)&&near(a.angle,b.angle,1e-8)&&near(a.angle,c.angle,1e-8);
+  });
+  test("13b. Moving weights: fixed-step updates at 30, 60 and 120 fps agree",()=>{
+    const simulate=fps=>{
+      const local=makeState(1,CONFIG.defaults.conserve);
+      initialise(local);setWeightTarget(local,.02);
+      let acc=0;
+      for(let f=0;f<fps*3;f++){
+        acc+=1/fps;
+        while(acc+CONFIG.epsilon>=CONFIG.fixedStep){advanceSimulation(local,CONFIG.fixedStep);acc-=CONFIG.fixedStep;}
+      }
+      return local;
+    };
+    const a=simulate(30),b=simulate(60),c=simulate(120);
+    return ["t","r","w","L"].every(k=>near(a[k],b[k])&&near(a[k],c[k]))&&
+      near(a.theta[0],b.theta[0])&&near(a.theta[0],c.theta[0])&&
+      JSON.stringify(a.history)===JSON.stringify(b.history)&&JSON.stringify(a.history)===JSON.stringify(c.history);
+  });
+  test("14. Target change never changes launch angular momentum",()=>{
+    const local=makeState(1,CONFIG.defaults.conserve);
+    initialise(local);const L=local.L0;setWeightTarget(local,.015);
+    for(let i=0;i<240;i++)advanceSimulation(local,CONFIG.fixedStep);
+    return local.L0===L&&local.L===L&&near(moment(local.r)*local.w,L);
+  });
+  test("15. Comparison ends at exact later stopping time",()=>{
+    const local=makeState(0,CONFIG.defaults.compare);initialise(local);
+    for(let i=0;i<10000&&local.status==="running";i++)advanceSimulation(local,CONFIG.fixedStep);
+    const expected=Math.max(stopTime(moment(local.p.rA),revToRad(local.p.speed),local.p.torque),stopTime(moment(local.p.rB),revToRad(local.p.speed),local.p.torque));
+    return near(local.t,expected)&&local.wA===0&&local.wB===0&&local.status==="complete";
+  });
+  test("16. History is bounded",()=>{
+    const local=makeState(2,{...CONFIG.defaults.brake,brake:false});initialise(local);
+    for(let i=0;i<CONFIG.maxSamples+200;i++){local.t=i*.1;appendSample(local);}
+    return local.history.length<=CONFIG.maxSamples;
+  });
+  test("17. Test-state changes do not touch live experiment states",()=>{
+    const snapshot=JSON.stringify(states);
+    const local=clone(makeState(1,CONFIG.defaults.conserve));
+    initialise(local);setWeightTarget(local,.02);advanceSimulation(local,.1);
+    return JSON.stringify(states)===snapshot;
+  });
+  if(failed===0)console.info(`[Physics self-tests] ${passed} passed.`);
+  else console.error(`[Physics self-tests] ${failed} failed; ${passed} passed.`);
+  return {passed,failed};
+}
+
+runPhysicsSelfTests();
+buildUI();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
